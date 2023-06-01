@@ -1,0 +1,39 @@
+---
+- name: Disable swap (fstab)
+  ansible.builtin.replace:
+    path: /etc/fstab
+    regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
+    replace: '# \1'
+  register: swap
+
+- name: Disable swap (swapoff)
+  ansible.builtin.shell:
+    cmd: swapoff -a
+  when: swap.changed is true
+
+- name: Create /etc/modules-load.d/k8s.conf 
+  ansible.builtin.copy:
+    src: k8s_modules
+    dest: /etc/modules-load.d/k8s.conf
+  register: k8s_modules
+
+- name: Load modules
+  ansible.builtin.shell:
+    cmd: modprobe -a overlay br_netfilter
+  when: k8s_modules.changed is true
+
+- name: Create /etc/modules-load.d/k8s.conf 
+  ansible.builtin.copy:
+    src: k8s_sysctl
+    dest: /etc/sysctl.d/k8s.conf
+  register: k8s_sysctl
+
+- name: sysctl modules
+  ansible.builtin.shell:
+    cmd: sysctl --system
+  when: k8s_sysctl.changed is true
+
+- name: Edit /etc/hosts file
+  ansible.builtin.lineinfile:
+    line: "{{ ansible_host }} {{ inventory_hostname }}"
+    path: "/etc/hosts"

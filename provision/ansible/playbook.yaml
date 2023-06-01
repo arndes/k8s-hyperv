@@ -1,0 +1,24 @@
+---
+- name: Prepare k8s installation
+  hosts: all
+  gather_facts: false
+  become: true
+
+  roles:
+    - crio
+    - k8s-prerequisite
+    - k8s-installation
+
+- name: Initialize k8s master
+  hosts: k8s-m01
+  gather_facts: false
+  become: true
+  roles:
+    - k8s-master
+
+- name: Initialize k8s workers
+  hosts: workers
+  gather_facts: false
+  become: true
+  roles:
+    - k8s-worker

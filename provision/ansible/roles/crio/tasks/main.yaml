@@ -1,0 +1,30 @@
+---
+- name: Add repository keys
+  ansible.builtin.apt_key:
+    url: "{{ item.url }}"
+    keyring: "{{ item.keyring }}"
+  loop: "{{ crio_repository }}"
+
+- name: Add repositories
+  ansible.builtin.apt_repository:
+    repo: "{{ item.repository }}"
+    state: present
+  loop: "{{ crio_repository }}"
+
+- name: Install crio
+  ansible.builtin.apt:
+    pkg:
+      - cri-o
+      - cri-o-runc
+    update_cache: yes
+
+- name: Make sure crio service unit is running
+  ansible.builtin.systemd:
+    state: started
+    enabled: true
+    name: crio.service
+
+- name: Remove crio CNI
+  ansible.builtin.file:
+    path: /etc/cni/net.d/100-crio-bridge.conf
+    state: absent

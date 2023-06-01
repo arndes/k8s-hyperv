@@ -1,0 +1,36 @@
+---
+- name: Check if kube-apiserver configuration file exists
+  ansible.builtin.stat:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+  register: kubeapi_conf
+
+- name: k8s master initialization
+  ansible.builtin.shell:
+    cmd: "kubeadm init --apiserver-advertise-address={{ ansible_host }} --node-name {{ inventory_hostname }} --pod-network-cidr=10.244.0.0/16 --token-ttl 10s"
+  when: kubeapi_conf.stat.exists is false
+
+- name: Create k8s config directory
+  ansible.builtin.file:
+    path: "/home/{{ ansible_user }}/.kube"
+    state: directory
+    mode: "0775"
+  become: false
+
+- name: Copy k8s config file
+  ansible.builtin.copy:
+    remote_src: true
+    src: /etc/kubernetes/admin.conf
+    dest: "/home/{{ ansible_user }}/.kube/config"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: "preserve"
+
+- name: Install bash-completion
+  ansible.builtin.apt:
+    pkg: bash-completion
+
+- name: Enable k8s bash completion
+  ansible.builtin.lineinfile:
+    line: "source <(kubectl completion bash)"
+    path: "/home/{{ ansible_user }}/.bashrc"
+  

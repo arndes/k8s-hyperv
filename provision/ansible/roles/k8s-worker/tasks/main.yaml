@@ -1,0 +1,17 @@
+---
+- name: Check if worker kubelet configuration file exists
+  ansible.builtin.stat:
+    path: /etc/kubernetes/kubelet.conf
+  register: kubelet_conf
+
+- name: Generate token from master
+  ansible.builtin.shell:
+    cmd: "kubeadm token create --print-join-command --ttl 10m --description '{{ inventory_hostname }} registration token'"
+  register: kubeadm_join_result
+  delegate_to: "k8s-m01"
+  when: kubelet_conf.stat.exists is false
+
+- name: Send command to register worker node
+  ansible.builtin.shell:
+    cmd: "{{ kubeadm_join_result.stdout }}"
+  when: kubelet_conf.stat.exists is false

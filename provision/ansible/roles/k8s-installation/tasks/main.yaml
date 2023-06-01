@@ -1,0 +1,33 @@
+---
+- name: Install prerequisite packages
+  ansible.builtin.apt:
+    pkg:
+      - apt-transport-https
+      - ca-certificates
+
+- name: Add kubernetes repository key
+  ansible.builtin.apt_key:
+    url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+    keyring: /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+
+- name: Add kubernetes repository
+  ansible.builtin.apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main"
+    state: present
+
+- name: Install kubernetes
+  ansible.builtin.apt:
+    pkg:
+      - kubelet
+      - kubeadm
+      - kubectl
+    update_cache: yes
+
+- name: Hold kubeadm
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop:
+    - kubelet
+    - kubeadm
+    - kubectl

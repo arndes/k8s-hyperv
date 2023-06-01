@@ -1,0 +1,15 @@
+all:
+  children:
+    masters:
+      hosts:
+        k8s-m01:
+          ansible_host: 10.99.0.10
+    workers:
+      hosts:
+        k8s-w01:
+          ansible_host: 10.99.0.20
+        k8s-w02:
+          ansible_host: 10.99.0.21
+  vars:
+    ansible_user: vagrant
+    ansible_password: vagrant
