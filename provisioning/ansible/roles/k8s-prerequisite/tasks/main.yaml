@@ -22,7 +22,11 @@
     cmd: modprobe -a overlay br_netfilter
   when: k8s_modules.changed is true
 
+<<<<<<< HEAD:provision/ansible/roles/k8s-prerequisite/tasks/main.yaml
 - name: Create /etc/sysctl.d/k8s.conf
+=======
+- name: Create /etc/sysctl.d/k8s.conf 
+>>>>>>> da51f1054f4a4e228288dd02cf5a314cb094e1c6:provisioning/ansible/roles/k8s-prerequisite/tasks/main.yaml
   ansible.builtin.copy:
     src: k8s_sysctl
     dest: /etc/sysctl.d/k8s.conf
